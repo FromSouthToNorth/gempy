@@ -1,0 +1,18 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.env
+
+# 输出目录
+output/*.png
+output/*.vtk
+output/*.html
+output/*.glb
+
+# IDE
+.vscode/
+.idea/
+*.swp
+.DS_Store
