@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GemPy 模型 Cesium 预览</title>
+<script src="https://unpkg.com/cesium@1.139.0/Build/Cesium/Cesium.js"></script>
+<link href="https://unpkg.com/cesium@1.139.0/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+<style>
+  html, body, #cesiumContainer { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; }
+  #toolbar {
+    position: absolute; top: 10px; left: 10px; z-index: 10;
+    background: rgba(0,0,0,0.8); color: #fff; padding: 12px;
+    border-radius: 4px; font-family: sans-serif; font-size: 13px; line-height: 1.7;
+    max-width: 220px;
+  }
+  #toolbar label { display: block; }
+  #toolbar select, #toolbar input, #toolbar button {
+    padding: 4px 6px; font-size: 13px; border-radius: 2px; border: none;
+    width: 120px; box-sizing: border-box;
+  }
+  #toolbar button { background: #3388ff; color: #fff; cursor: pointer; width: auto; }
+  #toolbar button:hover { background: #2277ee; }
+  #info { margin-top: 8px; font-size: 11px; color: #aaa; }
+</style>
+</head>
+<body>
+<div id="toolbar">
+  <label>模型 <select id="modelSelect">
+    <option value="01_basic_horizontal.glb">01 水平地层</option>
+    <option value="02_anticline.glb">02 背斜构造</option>
+    <option value="03_fault_model.glb">03 断层模型</option>
+  </select></label>
+  <label>经度 <input id="lon" value="120.0"></label>
+  <label>纬度 <input id="lat" value="31.0"></label>
+  <label>高程(m) <input id="hgt" value="0"></label>
+  <button id="btnLoad">加载 / 刷新</button>
+  <div id="info">就绪</div>
+</div>
+<div id="cesiumContainer"></div>
+<script>
+// OSM 底图 — Cesium 1.139 需要用 baseLayer 构造选项
+const osmProvider = new Cesium.OpenStreetMapImageryProvider({
+  url: 'https://a.tile.openstreetmap.org/'
+});
+
+const viewer = new Cesium.Viewer('cesiumContainer', {
+  baseLayer: new Cesium.ImageryLayer(osmProvider),
+  animation: false, timeline: false, geocoder: false,
+  homeButton: true, sceneModePicker: false, baseLayerPicker: false,
+  navigationHelpButton: false, fullscreenButton: false,
+});
+
+viewer.scene.globe.depthTestAgainstTerrain = false;
+
+let currentPrimitive = null;
+
+async function loadModel() {
+  const info = document.getElementById('info');
+  info.textContent = '加载中...';
+
+  if (currentPrimitive) {
+    viewer.scene.primitives.remove(currentPrimitive);
+    currentPrimitive = null;
+  }
+  const name = document.getElementById('modelSelect').value;
+  const lon = parseFloat(document.getElementById('lon').value) || 0;
+  const lat = parseFloat(document.getElementById('lat').value) || 0;
+  const hgt = parseFloat(document.getElementById('hgt').value) || 0;
+
+  const modelMatrix = Cesium.Transforms.eastNorthUpToFixedFrame(
+    Cesium.Cartesian3.fromDegrees(lon, lat, hgt)
+  );
+
+  try {
+    const model = await Cesium.Model.fromGltfAsync({
+      url: name,
+      modelMatrix: modelMatrix,
+      scale: 1.0,
+    });
+    model.backFaceCulling = false;  // GemPy 的三角网 winding order 不统一，禁用背面剔除
+    viewer.scene.primitives.add(model);
+    currentPrimitive = model;
+
+    const waitReady = () => new Promise(r => {
+      const check = () => model.ready ? r() : setTimeout(check, 50);
+      check();
+    });
+    await waitReady();
+
+    const bs = model.boundingSphere;
+    info.textContent = `半径 ${Math.round(bs.radius)}m`;
+
+    // 斜上方视角，同时看到多个面
+    viewer.camera.flyToBoundingSphere(bs, {
+      duration: 1.5,
+      offset: new Cesium.HeadingPitchRange(
+        Cesium.Math.toRadians(30),
+        Cesium.Math.toRadians(-55),
+        bs.radius * 4
+      )
+    });
+  } catch (e) {
+    console.error(e);
+    info.textContent = '加载失败: ' + e.message;
+  }
+}
+
+document.getElementById('btnLoad').addEventListener('click', loadModel);
+document.getElementById('modelSelect').addEventListener('change', loadModel);
+window.addEventListener('load', loadModel);
+</script>
+</body>
+</html>

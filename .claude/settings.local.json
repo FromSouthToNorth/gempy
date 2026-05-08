@@ -12,7 +12,29 @@
       "Bash(\"C:\\\\Users\\\\bw\\\\AppData\\\\Local\\\\Programs\\\\Python\\\\Python310\\\\python.exe\" -m pip --version)",
       "Bash(C:\\\\Users\\\\bw\\\\AppData\\\\Local\\\\Programs\\\\Python\\\\Python310\\\\python.exe *)",
       "Bash(\"C:\\\\Users\\\\bw\\\\AppData\\\\Local\\\\Programs\\\\Python\\\\Python310\\\\python.exe\" -m pip list)",
-      "Bash(\"C:\\\\Users\\\\bw\\\\AppData\\\\Local\\\\Programs\\\\Python\\\\Python310\\\\python.exe\" -m pip install --upgrade \"matplotlib>=3.7\")"
+      "Bash(\"C:\\\\Users\\\\bw\\\\AppData\\\\Local\\\\Programs\\\\Python\\\\Python310\\\\python.exe\" -m pip install --upgrade \"matplotlib>=3.7\")",
+      "Bash(.venv/Scripts/python.exe -c \"import gempy; print\\(gempy.__version__\\)\")",
+      "Bash(python -c \"import gempy as gp; print\\(gp.__version__\\); import pyvista; print\\('pyvista', pyvista.__version__\\); import gempy_viewer as gpv; print\\('gpv', gpv.__version__\\)\")",
+      "Bash(python -c \"import trimesh; print\\('trimesh', trimesh.__version__\\)\")",
+      "Bash(python -c \"import pyvista; print\\('pyvista', pyvista.__version__\\)\")",
+      "WebSearch",
+      "Bash(pip show *)",
+      "Bash(python -m pip list)",
+      "Bash(python -c \"import gempy; print\\('gempy ok'\\)\")",
+      "Bash(python -m pip install trimesh)",
+      "Bash(where py *)",
+      "Bash(where python3 *)",
+      "Read(//c/users/bw/AppData/Local/Programs/Python/Python310//**)",
+      "Bash(\"/c/users/bw/AppData/Local/Programs/Python/Python310/python.exe\" -c \"import gempy; print\\('gempy', gempy.__version__\\)\")",
+      "Bash(\"/c/users/bw/AppData/Local/Programs/Python/Python310/python.exe\" -m pip install trimesh)",
+      "Bash(/c/users/bw/AppData/Local/Programs/Python/Python310/python.exe *)",
+      "Bash(python3 *)",
+      "Bash(\"/c/users/bw/AppData/Local/Programs/Python/Python310/python.exe\" -m http.server 8080)",
+      "mcp__plugin_cesiumjs-skills_chrome-devtools__navigate",
+      "mcp__plugin_cesiumjs-skills_chrome-devtools__screenshot",
+      "Bash(taskkill /F /IM chrome.exe)",
+      "Bash(cmd //c \"taskkill /F /IM chrome.exe\")",
+      "mcp__plugin_cesiumjs-skills_chrome-devtools__evaluate"
     ]
   }
 }

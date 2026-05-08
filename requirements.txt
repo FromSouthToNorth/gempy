@@ -4,3 +4,4 @@ numpy>=1.24
 pandas>=2.0
 matplotlib>=3.7
 pyvista>=0.42
+trimesh>=4.0

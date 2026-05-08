@@ -6,10 +6,10 @@ venv/
 .env
 
 # 输出目录
-output/*.png
-output/*.vtk
-output/*.html
-output/*.glb
+# output/*.png
+# output/*.vtk
+# output/*.html
+# output/*.glb
 
 # IDE
 .vscode/
