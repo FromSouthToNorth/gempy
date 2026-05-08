@@ -49,6 +49,42 @@ python examples/03_fault_model.py
 | **Fault** | 断层,作为独立 series 注入 |
 | **Compute** | 调用 `compute_model` 求解势场,得到岩性体素 |
 
+## GLB 导出与 Cesium 三维预览
+
+### 导出 GLB
+
+```bash
+pip install -r requirements.txt   # 安装 trimesh
+python examples/04_export_glb.py  # 导出全部 3 个模型为 output/*.glb
+python examples/04_export_glb.py 03  # 仅导出 03_fault_model
+```
+
+导出的 GLB 包含每个 element 的 surface mesh 和原始颜色，坐标已通过 `input_transform.apply_inverse` 还原到模型 extent。
+
+### Cesium 本地预览
+
+```bash
+cd output
+python -m http.server 8080
+```
+
+浏览器打开 `http://localhost:8080/cesium_viewer.html`，填入真实经纬度高程后点击加载，模型即落在 OSM 底图上。
+
+若要在自己的 Cesium 项目中加载：
+
+```javascript
+const modelMatrix = Cesium.Transforms.eastNorthUpToFixedFrame(
+    Cesium.Cartesian3.fromDegrees(120.0, 31.0, 0)
+);
+const model = await Cesium.Model.fromGltfAsync({
+    url: '03_fault_model.glb',
+    modelMatrix: modelMatrix,
+    scale: 1.0,
+});
+model.backFaceCulling = false;  // GemPy 三角网 winding order 不统一
+viewer.scene.primitives.add(model);
+```
+
 ## 参考
 
 - 官方文档: https://docs.gempy.org/
