@@ -12,7 +12,7 @@
     position: absolute; top: 10px; left: 10px; z-index: 10;
     background: rgba(0,0,0,0.8); color: #fff; padding: 12px;
     border-radius: 4px; font-family: sans-serif; font-size: 13px; line-height: 1.7;
-    max-width: 220px;
+    max-width: 240px;
   }
   #toolbar label { display: block; }
   #toolbar select, #toolbar input, #toolbar button {
@@ -27,9 +27,10 @@
 <body>
 <div id="toolbar">
   <label>模型 <select id="modelSelect">
-    <option value="01_basic_horizontal.glb">01 水平地层</option>
-    <option value="02_anticline.glb">02 背斜构造</option>
-    <option value="03_fault_model.glb">03 断层模型</option>
+    <option value="01_basic_horizontal.glb" data-lon="120.0" data-lat="31.0">01 水平地层</option>
+    <option value="02_anticline.glb" data-lon="120.0" data-lat="31.0">02 背斜构造</option>
+    <option value="03_fault_model.glb" data-lon="120.0" data-lat="31.0">03 断层模型</option>
+    <option value="05_alesmodel.glb" data-lon="4.08" data-lat="44.12">05 Ales 真实模型</option>
   </select></label>
   <label>经度 <input id="lon" value="120.0"></label>
   <label>纬度 <input id="lat" value="31.0"></label>
@@ -55,6 +56,24 @@ viewer.scene.globe.depthTestAgainstTerrain = false;
 
 let currentPrimitive = null;
 
+function applyPreset() {
+  const sel = document.getElementById('modelSelect');
+  const opt = sel.options[sel.selectedIndex];
+  document.getElementById('lon').value = opt.dataset.lon;
+  document.getElementById('lat').value = opt.dataset.lat;
+}
+
+async function loadOffsetJson(glbName) {
+  const offsetName = glbName.replace('.glb', '.offset.json');
+  try {
+    const resp = await fetch(offsetName);
+    if (!resp.ok) return null;
+    return await resp.json();
+  } catch (e) {
+    return null;
+  }
+}
+
 async function loadModel() {
   const info = document.getElementById('info');
   info.textContent = '加载中...';
@@ -67,6 +86,8 @@ async function loadModel() {
   const lon = parseFloat(document.getElementById('lon').value) || 0;
   const lat = parseFloat(document.getElementById('lat').value) || 0;
   const hgt = parseFloat(document.getElementById('hgt').value) || 0;
+
+  const offsetData = await loadOffsetJson(name);
 
   const modelMatrix = Cesium.Transforms.eastNorthUpToFixedFrame(
     Cesium.Cartesian3.fromDegrees(lon, lat, hgt)
@@ -89,7 +110,12 @@ async function loadModel() {
     await waitReady();
 
     const bs = model.boundingSphere;
-    info.textContent = `半径 ${Math.round(bs.radius)}m`;
+    let infoText = `半径 ${Math.round(bs.radius)}m`;
+    if (offsetData && offsetData.offset) {
+      const o = offsetData.offset;
+      infoText += ` | 原中心 (${o[0].toFixed(0)}, ${o[1].toFixed(0)}, ${o[2].toFixed(0)})`;
+    }
+    info.textContent = infoText;
 
     // 斜上方视角，同时看到多个面
     viewer.camera.flyToBoundingSphere(bs, {
@@ -107,7 +133,10 @@ async function loadModel() {
 }
 
 document.getElementById('btnLoad').addEventListener('click', loadModel);
-document.getElementById('modelSelect').addEventListener('change', loadModel);
+document.getElementById('modelSelect').addEventListener('change', () => {
+  applyPreset();
+  loadModel();
+});
 window.addEventListener('load', loadModel);
 </script>
 </body>
