@@ -55,22 +55,50 @@ def iter_surface_meshes(
         yield el.name, el.color, verts, faces
 
 
-def export_glb(geo_model, name: str, *, alpha: int = 255) -> Path:
-    """把所有 surface 写入单个二进制 GLB,返回路径。需要 `trimesh`。"""
+def export_glb(
+    geo_model,
+    name: str,
+    *,
+    alpha: int = 255,
+    center_to_origin: bool = False,
+) -> Path:
+    """把所有 surface 写入单个二进制 GLB,返回路径。需要 `trimesh`。
+
+    Args:
+        center_to_origin: 为 True 时,把所有顶点平移到原点附近(Blender 友好),
+            同时输出 `{name}.offset.json` 记录原始中心点,供 Cesium 还原位置。
+    """
     import trimesh
 
+    meshes_data = list(iter_surface_meshes(geo_model))
+    if not meshes_data:
+        raise RuntimeError("没有可导出的 surface mesh。检查 compute_model 是否成功。")
+
+    offset = np.zeros(3, dtype=np.float64)
+    if center_to_origin:
+        all_verts = np.vstack([verts for _, _, verts, _ in meshes_data])
+        offset = (all_verts.min(axis=0) + all_verts.max(axis=0)) / 2.0
+
     scene = trimesh.Scene()
-    n = 0
-    for surf, color, verts, faces in iter_surface_meshes(geo_model):
+    for surf, color, verts, faces in meshes_data:
+        verts = verts - offset
         mesh = trimesh.Trimesh(vertices=verts, faces=faces, process=False)
         mesh.visual.face_colors = _hex_to_rgba(color, alpha)
         scene.add_geometry(mesh, node_name=surf, geom_name=surf)
-        n += 1
-    if n == 0:
-        raise RuntimeError("没有可导出的 surface mesh。检查 compute_model 是否成功。")
 
     out = ensure_output_dir() / f"{name}.glb"
     scene.export(str(out), file_type="glb")
+
+    if center_to_origin:
+        import json
+
+        offset_path = ensure_output_dir() / f"{name}.offset.json"
+        offset_path.write_text(
+            json.dumps({"offset": offset.tolist()}, indent=2),
+            encoding="utf-8",
+        )
+        print(f"  offset 已写入 {offset_path}")
+
     return out
 
 

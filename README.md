@@ -7,13 +7,15 @@
 ```
 gempy/
 ├── requirements.txt      # 依赖列表
-├── examples/             # 由浅入深的三个示例
+├── examples/             # 由浅入深的示例
 │   ├── 01_basic_horizontal_layers.py   # 水平地层(入门)
 │   ├── 02_anticline.py                 # 背斜构造
-│   └── 03_fault_model.py               # 含正断层模型
+│   ├── 03_fault_model.py               # 含正断层模型
+│   ├── 04_export_glb.py                # 把模型导出为 GLB / Cesium
+│   └── 05_alesmodel.py                 # Ales 模型(法国南部真实数据,3 断层 + DEM)
 ├── src/gempy_demo/       # 公共工具函数
-├── data/                 # 输入数据(CSV)
-└── output/               # 渲染结果(图片/VTK)
+├── data/                 # 输入数据(CSV / DEM)
+└── output/               # 渲染结果(图片/VTK/GLB)
 ```
 
 ## 安装
@@ -26,12 +28,17 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
+> **本机环境提示**:本仓库实际跑通用的是系统 `Python 3.10`(`py -3.10`),
+> PATH 上的默认 `python` 未必装了 gempy。下文命令统一用 `py -3.10`,
+> 已激活 venv 的话替换成 `python` 即可。
+
 ## 运行
 
 ```bash
-python examples/01_basic_horizontal_layers.py
-python examples/02_anticline.py
-python examples/03_fault_model.py
+py -3.10 examples/01_basic_horizontal_layers.py
+py -3.10 examples/02_anticline.py
+py -3.10 examples/03_fault_model.py
+py -3.10 examples/05_alesmodel.py    # 真实数据,首次约 2-3 分钟
 ```
 
 每个示例会:
@@ -54,9 +61,9 @@ python examples/03_fault_model.py
 ### 导出 GLB
 
 ```bash
-pip install -r requirements.txt   # 安装 trimesh
-python examples/04_export_glb.py  # 导出全部 3 个模型为 output/*.glb
-python examples/04_export_glb.py 03  # 仅导出 03_fault_model
+pip install -r requirements.txt          # 安装 trimesh
+py -3.10 examples/04_export_glb.py       # 导出全部模型为 output/*.glb
+py -3.10 examples/04_export_glb.py 03    # 仅导出 03_fault_model
 ```
 
 导出的 GLB 包含每个 element 的 surface mesh 和原始颜色，坐标已通过 `input_transform.apply_inverse` 还原到模型 extent。
@@ -65,7 +72,7 @@ python examples/04_export_glb.py 03  # 仅导出 03_fault_model
 
 ```bash
 cd output
-python -m http.server 8080
+py -3.10 -m http.server 8080
 ```
 
 浏览器打开 `http://localhost:8080/cesium_viewer.html`，填入真实经纬度高程后点击加载，模型即落在 OSM 底图上。

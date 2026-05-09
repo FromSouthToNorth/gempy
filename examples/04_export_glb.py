@@ -20,9 +20,10 @@ sys.path.insert(0, str(THIS_DIR))
 from gempy_demo.to_gltf import export_glb
 
 EXAMPLES = {
-    "01": ("01_basic_horizontal_layers", "01_basic_horizontal"),
-    "02": ("02_anticline", "02_anticline"),
-    "03": ("03_fault_model", "03_fault_model"),
+    "01": ("01_basic_horizontal_layers", "01_basic_horizontal", False),
+    "02": ("02_anticline", "02_anticline", False),
+    "03": ("03_fault_model", "03_fault_model", False),
+    "05": ("05_alesmodel", "05_alesmodel", True),
 }
 
 
@@ -32,11 +33,11 @@ def main() -> None:
         if k not in EXAMPLES:
             print(f"未知示例 '{k}',可选: {list(EXAMPLES)}")
             continue
-        mod_name, out_name = EXAMPLES[k]
+        mod_name, out_name, center = EXAMPLES[k]
         print(f"[{k}] 构建 {mod_name} ...")
         mod = importlib.import_module(mod_name)
         geo_model = mod.build_model()
-        out = export_glb(geo_model, out_name)
+        out = export_glb(geo_model, out_name, center_to_origin=center)
         print(f"[{k}] 已写入 {out}")
 
 
